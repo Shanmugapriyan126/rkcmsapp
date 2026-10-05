@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>RK-CMS</title><link rel="stylesheet" href="style.css"></head><body>
+<meta name="theme-color" content="#0f1b2d"><title>RK-CMS</title><link rel="stylesheet" href="style.css"></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-dash" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2.5" fill="currentColor" stroke="none"/><rect x="13" y="3" width="8" height="5" rx="2" fill="currentColor" stroke="none"/><rect x="13" y="10" width="8" height="11" rx="2.5" fill="currentColor" stroke="none"/><rect x="3" y="13" width="8" height="8" rx="2.5" fill="currentColor" stroke="none"/></symbol>
 <symbol id="i-inv" viewBox="0 0 24 24"><path d="M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10"/></symbol>
@@ -17,6 +17,9 @@
 <symbol id="i-ledger" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM9 9h6M9 13h6M9 17h3"/></symbol>
 <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6zM14 3v5h5"/></symbol>
 <symbol id="i-off" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
 </defs></svg>
 
 <section id="loginPage" class="login">
@@ -42,13 +45,23 @@
       <button class="nav" data-page="stock"><svg class="i"><use href="#i-ledger"/></svg> Stock Ledger</button>
       <button class="nav" data-page="consumption"><svg class="i"><use href="#i-drop"/></svg> Consumption</button>
       <button class="nav" data-page="reports"><svg class="i"><use href="#i-rep"/></svg> Reports</button>
+    <button class="nav" data-page="settings"><svg class="i"><use href="#i-gear"/></svg> Settings</button>
     </nav>
     <small class="muted">Internal Factory Use<br>© 2026 EHS</small>
   </aside>
   <main>
-    <header><h1 id="pageTitle">Dashboard</h1><div><span id="userInfo" class="muted"></span> <button class="ghost" id="logoutBtn"><svg class="i"><use href="#i-out"/></svg> Logout</button></div></header>
+    <header><div class="hl"><button class="ghost hidden" id="backBtn" onclick="show('dashboard')"><svg class="i"><use href="#i-chev"/></svg></button><h1 id="pageTitle">Dashboard</h1></div><div><span id="userInfo" class="muted"></span> <button class="ghost" id="logoutBtn"><svg class="i"><use href="#i-out"/></svg> Logout</button></div></header>
 
     <section id="dashboard" class="page active">
+      <div class="hero" id="hero"></div>
+      <div class="tiles">
+        <button class="tile adm" data-page="addChemical"><svg class="i"><use href="#i-plus"/></svg>Add Chemical</button>
+        <button class="tile rec" data-page="consumption"><svg class="i"><use href="#i-drop"/></svg>Record Use</button>
+        <button class="tile" data-page="stock"><svg class="i"><use href="#i-ledger"/></svg>Stock Ledger</button>
+        <button class="tile" data-page="reports"><svg class="i"><use href="#i-rep"/></svg>Reports</button>
+        <button class="tile" onclick="exportInventory()"><svg class="i"><use href="#i-dl"/></svg>Export CSV</button>
+        <button class="tile" onclick="refresh()"><svg class="i"><use href="#i-refresh"/></svg>Refresh</button>
+      </div>
       <div class="cards" id="kpis"></div>
       <div class="two">
         <div class="panel"><h2>Needs attention</h2><div class="tw"><table><thead><tr><th>ID</th><th>Chemical</th><th>Issue</th></tr></thead><tbody id="alertTable"></tbody></table></div></div>
@@ -102,7 +115,15 @@
         <div class="panel"><h2>Period &amp; downloads</h2><div class="grid"><div><label>From</label><input type="date" id="rFrom"></div><div><label>To</label><input type="date" id="rTo"></div></div><div class="row l"><button class="btn" onclick="exportInventory()"><svg class="i"><use href="#i-dl"/></svg> Inventory CSV</button><button class="btn" onclick="exportUsage()"><svg class="i"><use href="#i-dl"/></svg> Consumption CSV</button></div></div>
       </div>
     </section>
+    <section id="settings" class="page"><div id="settingsBody"></div></section>
   </main>
+  <nav id="tabbar">
+    <button class="tab active" data-page="dashboard"><svg class="i"><use href="#i-dash"/></svg><span>Home</span></button>
+    <button class="tab" data-page="inventory"><svg class="i"><use href="#i-inv"/></svg><span>Inventory</span></button>
+    <button class="tab fab rec" data-page="consumption"><svg class="i"><use href="#i-drop"/></svg><span>Use</span></button>
+    <button class="tab" data-page="reports"><svg class="i"><use href="#i-rep"/></svg><span>Reports</span></button>
+    <button class="tab" data-page="settings"><svg class="i"><use href="#i-gear"/></svg><span>Settings</span></button>
+  </nav>
 </div>
 
 <div id="modal" class="modal hidden"><div class="mcard" id="mbody"></div></div>

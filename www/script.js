@@ -25,6 +25,38 @@ const who = id => esc(names[id] || "-");
 const act = () => chems.filter(c => c.active !== false);
 const fdate = v => v ? new Date(v + "T00:00").toLocaleDateString("en-GB", {day: "2-digit", month: "short", year: "numeric"}) : "-";
 const fdt = v => v ? new Date(v).toLocaleString("en-GB", {day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"}) : "-";
+/* ---------- settings & themes (saved on this device) ---------- */
+const SET_KEY = "rkcms_settings", APP_VERSION = "1.1.0";
+const ACC = {Teal:["#0d9488","#0b7c72"],Blue:["#2563eb","#1d4ed8"],Indigo:["#4f46e5","#4338ca"],Orange:["#ea580c","#c2410c"],Green:["#16a34a","#15803d"],Crimson:["#dc2626","#b91c1c"]};
+const DEF = {theme: "auto", accent: "Teal", size: "1", refresh: "0"};
+let S = {...DEF}; try { S = {...DEF, ...JSON.parse(localStorage.getItem(SET_KEY) || "{}")}; } catch (e) {}
+function applySettings() {
+  const dark = S.theme === "dark" || (S.theme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches), r = document.documentElement, a = ACC[S.accent] || ACC.Teal;
+  r.dataset.theme = dark ? "dark" : "light"; r.style.setProperty("--ac", a[0]); r.style.setProperty("--ac2", a[1]); r.style.setProperty("--fs", S.size);
+  document.querySelector("meta[name=theme-color]")?.setAttribute("content", dark ? "#0b1220" : "#0f1b2d");
+  clearInterval(applySettings.t);
+  if (+S.refresh) applySettings.t = setInterval(() => { if (profile && !document.hidden && $("modal").classList.contains("hidden")) load().catch(() => {}); }, +S.refresh * 6e4);
+}
+function setS(k, v) { S[k] = v; try { localStorage.setItem(SET_KEY, JSON.stringify(S)); } catch (e) {} applySettings(); settings(); }
+function resetS() { S = {...DEF}; try { localStorage.removeItem(SET_KEY); } catch (e) {} applySettings(); settings(); toast("Settings reset"); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => S.theme === "auto" && applySettings());
+async function refresh() { try { await load(); toast("Data refreshed"); } catch (e) { toast(e.message || "Refresh failed", 1); } }
+async function logout() { await db.auth.signOut(); location.reload(); }
+function settings() {
+  const seg = (k, o) => `<div class="seg">${o.map(([v, l]) => `<button class="${String(S[k]) === v ? "on" : ""}" onclick="setS('${k}','${v}')">${l}</button>`).join("")}</div>`;
+  const sw = Object.entries(ACC).map(([n, a]) => `<button class="sw ${S.accent === n ? "on" : ""}" title="${n}" style="background:${a[0]}" onclick="setS('accent','${n}')"></button>`).join("");
+  const kv = (l, v) => `<div><span>${l}</span><b>${esc(v || "-")}</b></div>`, p = profile || {};
+  $("settingsBody").innerHTML = `
+  <div class="panel"><h2>Account</h2><div class="kv">${kv("Name", p.full_name)}${kv("Role", role())}${kv("Employee ID", p.employee_id)}${kv("Department", p.department)}${kv("Designation", p.designation)}${kv("Login", me?.email)}</div>
+    <div class="row l"><button class="ghost" onclick="logout()">${I("out")} Logout</button></div></div>
+  <div class="panel"><h2>Themes</h2><label>Mode</label>${seg("theme", [["light","Light"],["dark","Dark"],["auto","Auto"]])}
+    <label>Accent colour</label><div class="sws">${sw}</div><label>Text size</label>${seg("size", [["0.92","Small"],["1","Normal"],["1.12","Large"]])}</div>
+  <div class="panel"><h2>Application</h2><label>Auto-refresh data</label>${seg("refresh", [["0","Off"],["1","Every 1 min"],["5","Every 5 min"]])}
+    <div class="row l"><button class="btn" onclick="refresh()">${I("refresh")} Refresh now</button><button class="ghost" onclick="resetS()">Reset settings</button></div></div>
+  <div class="panel"><h2>About</h2><div class="kv">${kv("Application", "RK-CMS Chemical Management")}${kv("Version", APP_VERSION)}${kv("Company", "RK Industries - IV")}${kv("Platform", NATIVE ? "Android app" : "Web")}${kv("Data", "Supabase (live)")}</div></div>`;
+}
+applySettings();
+
 function toast(msg, bad) { const t = $("toast"); t.textContent = msg; t.className = "toast" + (bad ? " bad" : ""); clearTimeout(t._t); t._t = setTimeout(() => t.classList.add("hidden"), 3800); }
 function modal(html) { $("mbody").innerHTML = html; $("modal").classList.remove("hidden"); }
 function closeModal() { $("modal").classList.add("hidden"); }
@@ -43,11 +75,12 @@ function issues(c) {
 }
 
 /* ---------- navigation ---------- */
-const TITLES = {dashboard:"Dashboard",inventory:"Chemical Inventory",addChemical:"Add Chemical",stock:"Stock Ledger",consumption:"Consumption Log",reports:"Reports"};
+const TITLES = {dashboard:"Dashboard",inventory:"Chemical Inventory",addChemical:"Add Chemical",stock:"Stock Ledger",settings:"Settings",consumption:"Consumption Log",reports:"Reports"};
 function show(id) {
   if (id === "addChemical" && !admin()) id = "dashboard";
   document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === id));
-  document.querySelectorAll(".nav").forEach(b => b.classList.toggle("active", b.dataset.page === id));
+  document.querySelectorAll(".nav,.tab").forEach(b => b.classList.toggle("active", b.dataset.page === id));
+  $("backBtn").classList.toggle("hidden", !["addChemical","stock"].includes(id)); window.scrollTo(0, 0);
   $("pageTitle").textContent = TITLES[id]; render();
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-page]"); if (b) show(b.dataset.page); });
@@ -90,13 +123,16 @@ async function load() {
 const rowsOr = (arr, cols, fn) => arr.length ? arr.map(fn).join("") : `<tr><td colspan="${cols}" class="empty">No records found</td></tr>`;
 function render() {
   const page = document.querySelector(".page.active")?.id;
-  ({dashboard, inventory, stock, consumption, reports}[page] || (() => {}))();
+  ({dashboard, inventory, stock, consumption, reports, settings}[page] || (() => {}))();
 }
 const card = (l, v, c = "") => `<div class="card ${c}"><span>${l}</span><b>${v}</b></div>`;
 const chemOpts = (first) => `<option value="">${first}</option>` + act().map(c => `<option value="${c.id}">${esc(c.chemical_code)} – ${esc(c.chemical_name)} (${fmt(c.stock)} ${esc(c.unit)})</option>`).join("");
 
 function dashboard() {
   const a = act(), due = a.filter(c => { const d = daysLeft(c); return d !== null && d <= 30; }).length;
+  const n = a.filter(c => issues(c).length).length;
+  $("hero").innerHTML = `<small>${new Date().toLocaleDateString("en-GB", {weekday: "long", day: "2-digit", month: "long"})}</small><h2>Hello, ${esc((profile?.full_name || "").split(" ")[0] || "there")}</h2>
+    <p>${n ? `${n} chemical${n > 1 ? "s" : ""} need attention` : "All chemicals are in order"} · ${a.length} active</p>`;
   $("kpis").innerHTML = card("Total chemicals", a.length) + card("In stock", a.filter(c => num(c.stock) > 0).length, "grn") +
     card("Hazardous", a.filter(c => c.hazard && c.hazard !== "Non-Hazardous").length, "amb") + card("Expiry / review due", due, "red") + card("SDS missing", a.filter(c => !c.sds_available).length, "red");
   $("alertTable").innerHTML = rowsOr(a.filter(c => issues(c).length).slice(0, 8), 3, c => `<tr><td class="code">${esc(c.chemical_code)}</td><td>${esc(c.chemical_name)}</td><td>${issues(c).join(" ")}</td></tr>`);
@@ -263,7 +299,7 @@ $("loginForm").onsubmit = async e => {
   if (error) $("loginError").textContent = error.message; else { me = data.user; await start(); }
   $("loginBtn").disabled = false; $("loginBtn").textContent = "Sign in";
 };
-$("logoutBtn").onclick = async () => { await db.auth.signOut(); location.reload(); };
+$("logoutBtn").onclick = logout;
 
 async function start() {
   try {
