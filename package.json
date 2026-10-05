@@ -1,8 +1,9 @@
 {
   "name": "rk-cms-android",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "RK-CMS Chemical Management System – Android app",
+  "devDependencies": { "@capacitor/assets": "^3.0.5" },
   "dependencies": {
     "@capacitor/android": "^6.1.0",
     "@capacitor/browser": "^6.0.0",
