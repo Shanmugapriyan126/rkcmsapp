@@ -67,7 +67,7 @@ body{padding-top:env(safe-area-inset-top)}input,select,textarea{font-size:16px}
   aside{display:none}.app{display:block}.two{grid-template-columns:1fr}
   main{padding:14px 14px calc(92px + env(safe-area-inset-bottom))}
   #userInfo,#logoutBtn{display:none}
-  #tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));align-items:flex-end}
+    #tabbar{display:flex;flex-direction:row;flex:none;justify-content:space-around;width:100%;position:fixed;left:0;right:0;bottom:0;z-index:5;gap:0;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));align-items:flex-end}
   #tabbar button{flex:1;background:none;border:0;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:3px;font:600 11px system-ui;padding:6px 0;cursor:pointer}
   #tabbar .i{width:24px;height:24px}#tabbar button.active{color:var(--ac)}
   #tabbar .fab{position:relative;top:-16px;flex:0 0 78px}
