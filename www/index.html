@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RK-CMS</title><link rel="stylesheet" href="style.css"></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-dash" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2.5" fill="currentColor" stroke="none"/><rect x="13" y="3" width="8" height="5" rx="2" fill="currentColor" stroke="none"/><rect x="13" y="10" width="8" height="11" rx="2.5" fill="currentColor" stroke="none"/><rect x="3" y="13" width="8" height="8" rx="2.5" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-inv" viewBox="0 0 24 24"><path d="M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s7 7 7 12a7 7 0 01-14 0c0-5 7-12 7-12z"/></symbol>
+<symbol id="i-rep" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20l1-5L16 4l4 4L9 19zM14 6l4 4"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5"/></symbol>
+<symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 4v12M6 11l6 6 6-6M5 21h14"/></symbol>
+<symbol id="i-out" viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l5 4-5 4M19 12H9"/></symbol>
+<symbol id="i-recv" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3"/></symbol>
+<symbol id="i-ledger" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM9 9h6M9 13h6M9 17h3"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6zM14 3v5h5"/></symbol>
+<symbol id="i-off" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></symbol>
+</defs></svg>
+
+<section id="loginPage" class="login">
+  <form id="loginForm" class="lcard">
+    <img src="logo.png" alt="RK Industries" class="llogo">
+    <h1>RK-CMS</h1><p class="muted">Chemical Management System · RK Industries - IV</p>
+    <label>Email</label><input id="loginEmail" type="email" autocomplete="username" required>
+    <label>Password</label>
+    <div class="pw"><input id="loginPassword" type="password" autocomplete="current-password" required><button type="button" id="togglePw" class="ghost">Show</button></div>
+    <button class="btn" id="loginBtn">Sign in</button>
+    <p id="loginError" class="err"></p>
+    <small class="muted">Authorized factory users only</small>
+  </form>
+</section>
+
+<div id="appShell" class="app hidden">
+  <aside>
+    <div class="brand"><img src="logo.png" alt=""><b>RK-CMS</b></div>
+    <nav>
+      <button class="nav active" data-page="dashboard"><svg class="i"><use href="#i-dash"/></svg> Dashboard</button>
+      <button class="nav" data-page="inventory"><svg class="i"><use href="#i-inv"/></svg> Inventory</button>
+      <button class="nav adm" data-page="addChemical"><svg class="i"><use href="#i-plus"/></svg> Add Chemical</button>
+      <button class="nav" data-page="stock"><svg class="i"><use href="#i-ledger"/></svg> Stock Ledger</button>
+      <button class="nav" data-page="consumption"><svg class="i"><use href="#i-drop"/></svg> Consumption</button>
+      <button class="nav" data-page="reports"><svg class="i"><use href="#i-rep"/></svg> Reports</button>
+    </nav>
+    <small class="muted">Internal Factory Use<br>© 2026 EHS</small>
+  </aside>
+  <main>
+    <header><h1 id="pageTitle">Dashboard</h1><div><span id="userInfo" class="muted"></span> <button class="ghost" id="logoutBtn"><svg class="i"><use href="#i-out"/></svg> Logout</button></div></header>
+
+    <section id="dashboard" class="page active">
+      <div class="cards" id="kpis"></div>
+      <div class="two">
+        <div class="panel"><h2>Needs attention</h2><div class="tw"><table><thead><tr><th>ID</th><th>Chemical</th><th>Issue</th></tr></thead><tbody id="alertTable"></tbody></table></div></div>
+        <div class="panel"><h2>Recently added</h2><div class="tw"><table><thead><tr><th>ID</th><th>Chemical</th><th>Stock</th><th>Hazard</th></tr></thead><tbody id="recentTable"></tbody></table></div></div>
+      </div>
+    </section>
+
+    <section id="inventory" class="page"><div class="panel">
+      <div class="bar"><input id="search" placeholder="Search name, code, CAS, supplier…"><select id="deptFilter"></select><select id="hazFilter"></select><select id="statFilter"><option value="active">Active</option><option value="inactive">Inactive</option><option value="all">All</option></select><button class="btn" onclick="exportInventory()"><svg class="i"><use href="#i-dl"/></svg> CSV</button></div>
+      <div class="tw"><table><thead><tr><th>ID</th><th>Chemical</th><th>CAS</th><th>Dept</th><th>Hazard</th><th>Stock</th><th>Storage</th><th>Expiry</th><th></th></tr></thead><tbody id="invTable"></tbody></table></div>
+    </div></section>
+
+    <section id="addChemical" class="page"><div class="panel"><h2>Add new chemical</h2>
+      <form id="addForm"><div class="grid" id="addFields"></div><div class="row"><button type="reset" class="ghost">Clear</button><button class="btn">Save chemical</button></div></form>
+    </div></section>
+
+    <section id="stock" class="page">
+      <div class="panel adm"><h2>Stock receipt / adjustment</h2>
+        <form id="stForm"><div class="grid">
+          <div><label>Chemical *</label><select id="stChem" required></select></div>
+          <div><label>Type *</label><select id="stType"><option value="RECEIPT">Receipt (add stock)</option><option value="ADJUSTMENT">Adjustment (set physical count)</option></select></div>
+          <div><label id="stQtyLabel">Quantity received *</label><input id="stQty" type="number" min="0" step="0.01" required></div>
+          <div><label>Remarks</label><input id="stRemarks" placeholder="Invoice / GRN / reason"></div>
+        </div><div class="row"><button class="btn"><svg class="i"><use href="#i-recv"/></svg> Save entry</button></div></form>
+      </div>
+      <div class="panel"><h2>Stock ledger <small class="muted">(latest 300)</small></h2>
+        <div class="tw"><table><thead><tr><th>Date</th><th>Chemical</th><th>Type</th><th>Change</th><th>Before → After</th><th>By</th><th>Remarks</th></tr></thead><tbody id="stTable"></tbody></table></div></div>
+    </section>
+
+    <section id="consumption" class="page">
+      <div class="panel rec"><h2>Record consumption</h2>
+        <form id="useForm"><div class="grid">
+          <div><label>Chemical *</label><select id="useChem" required></select></div>
+          <div><label>Date *</label><input id="useDate" type="date" required></div>
+          <div><label>Department *</label><select id="useDept" required></select></div>
+          <div><label>Quantity *</label><input id="useQty" type="number" min="0.01" step="0.01" required></div>
+          <div><label>Unit</label><input id="useUnit" readonly></div>
+          <div><label>Used by</label><input id="useUser" placeholder="Name / Employee ID"></div>
+          <div class="full"><label>Purpose / process</label><input id="usePurpose" placeholder="e.g. Dyeing batch / ETP dosing"></div>
+          <div class="full"><label>Remarks</label><textarea id="useRemarks"></textarea></div>
+        </div><div class="row"><button type="reset" class="ghost">Clear</button><button class="btn">Save consumption</button></div></form>
+      </div>
+      <div class="panel"><div class="bar"><h2>History</h2><button class="btn" onclick="exportUsage()"><svg class="i"><use href="#i-dl"/></svg> CSV</button></div>
+        <div class="tw"><table><thead><tr><th>Date</th><th>Chemical</th><th>Dept</th><th>Qty</th><th>Used by</th><th>Purpose</th><th>Recorded by</th></tr></thead><tbody id="useTable"></tbody></table></div></div>
+    </section>
+
+    <section id="reports" class="page">
+      <div class="cards" id="repKpis"></div>
+      <div class="two">
+        <div class="panel"><h2>Consumption by department</h2><div class="tw"><table><thead><tr><th>Department</th><th>Total used</th><th>Entries</th></tr></thead><tbody id="deptTable"></tbody></table></div></div>
+        <div class="panel"><h2>Period &amp; downloads</h2><div class="grid"><div><label>From</label><input type="date" id="rFrom"></div><div><label>To</label><input type="date" id="rTo"></div></div><div class="row l"><button class="btn" onclick="exportInventory()"><svg class="i"><use href="#i-dl"/></svg> Inventory CSV</button><button class="btn" onclick="exportUsage()"><svg class="i"><use href="#i-dl"/></svg> Consumption CSV</button></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="modal" class="modal hidden"><div class="mcard" id="mbody"></div></div>
+<div id="toast" class="toast hidden"></div>
+<script src="supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="script.js"></script>
+</body></html>
