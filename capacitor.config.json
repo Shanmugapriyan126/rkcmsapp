@@ -1,0 +1,6 @@
+{
+  "appId": "com.rkindustries.cms",
+  "appName": "RK-CMS",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}
